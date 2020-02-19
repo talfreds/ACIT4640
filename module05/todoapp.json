@@ -1,0 +1,87 @@
+{
+	"description": "Packer box for ToDoApp in ACIT4640",
+	"variables": {
+		 	"admin_user": "admin",
+			"admin_passwd": "P@ssw0rd",
+			"pub_key_file": "./files/acit_admin_id_rsa.pub",
+			"iso_url": "./isos/CentOS-7-x86_64-Minimal-1908.iso",
+			"iso_checksum_url": "./isos/shasum.txt",
+			"iso_checksum_type": "sha256",
+ 			"http_directory": "./files/http",
+			"shutdown_command": "sudo poweroff",
+			"app_install_files": "./files/http/setup"			
+	},
+	"builders": [
+        {
+            "type": "virtualbox-iso",
+            "output_directory": "./output",
+            "vm_name": "4640_BASE",
+            "iso_url": "{{ user `iso_url` }}",
+            "iso_checksum_url": "{{ user `iso_checksum_url` }}",
+            "iso_checksum_type": "{{ user `iso_checksum_type` }}",
+            "http_directory": "{{ user `http_directory` }}",
+            "shutdown_command": "{{ user `shutdown_command` }}",
+            "ssh_username": "{{ user `admin_user` }}",
+            "ssh_password": "{{ user `admin_passwd` }}",
+            "ssh_timeout": "30m",
+            "ssh_pty": "true",
+            "boot_command": [
+                
+		    "<up><wait><tab><wait> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks_base.cfg<enter><wait>"
+            ],
+            "format": "ova",
+            "guest_os_type": "RedHat_64",
+            "guest_additions_mode": "disable",
+            "hard_drive_interface": "sata",
+            "hard_drive_nonrotational": true,
+            "hard_drive_discard": true,
+            "memory": "1536",
+            "vboxmanage": [
+                [
+                    "modifyvm",
+                    "{{.Name}}",
+                    "--nictype1",
+                    "virtio"
+                ]
+            ]
+        }
+    ],
+    "provisioners": [
+	{	"type":"shell",	
+	    	"inline": [
+			"mkdir ~{{ user `admin_user`}}/.ssh"
+	    ]
+	},                                                                                                                  {                                                                                                                    	"type":"shell",                                                                                                     "inline": [                                                                                                                 "chown {{ user `admin_user`}}:{{ user `admin_user`}} ~{{ user `admin_user`}}/.ssh; chmod 700 ~{{ user `admin_user`}}/.ssh"
+			]
+	},
+	{
+		"type":"file",
+		"source":"{{ user `pub_key_file` }}",
+		"destination": "~{{ user `admin_user` }}/pub_key_file"
+	},
+	{
+		"type":"shell",
+		"inline":[
+			"cat ~{{ user `admin_user` }}/pub_key_file >> ~{{ user `admin_user`}}/.ssh/authorized_keys; rm ~{{ user `admin_user` }}/pub_key_file"
+    			]
+	},
+	{
+		"type":"shell",
+		"inline":[
+			"chmod 644 ~{{ user `admin_user`}}/.ssh/authorized_keys"
+		]
+	},
+	{
+		"type":"file",
+		"source":"{{user `app_install_files` }}",
+		"destination": "~{{ user `admin_user` }}/setup"
+	},
+	{
+		"type":"shell",
+		"inline":[
+			"bash -x ~{{ user `admin_user`}}/setup/install_script.sh >  ~{{ user `admin_user`}}/install_script_log.txt"
+		]
+	}
+    ]
+}
+
