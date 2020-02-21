@@ -1,0 +1,7 @@
+Host midterm
+Hostname localhost
+Port 12922                                                                                                        
+IdentityFile ~/.ssh/midterm_id_rsa                                                        
+User midterm                                                                                                       
+StrictHostKeyChecking no                                               
+UserKnownHostsFile=/dev/null

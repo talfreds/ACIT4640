@@ -1,0 +1,16 @@
+[Unit]
+Description=hichat app, ACIT4640 midterm
+After=network.target
+
+[Service]
+Environment=NODE_PORT=3000
+WorkingDirectory=/app/
+Type=simple
+User=todoapp
+ExecStart=/usr/bin/node /app/server.js
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+
