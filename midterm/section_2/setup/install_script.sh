@@ -23,6 +23,7 @@ install_infra () {
 install_app () {
 	sudo rm -r /app
 	sudo git clone https://github.com/wayou/HiChat /app
+	sudo chown "$SERVICE_ACCOUNT":"$SERVICE_ACCOUNT" /app
 	sudo -H -u "$SERVICE_ACCOUNT" bash -c "cd /app; npm install"
 	sudo chown -R "$SERVICE_ACCOUNT":"$SERVICE_ACCOUNT" /app
 	sudo chmod -R 766 /app
