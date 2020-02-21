@@ -3,10 +3,10 @@ Description=hichat app, ACIT4640 midterm
 After=network.target
 
 [Service]
-Environment=NODE_PORT=3000
+Environment=PORT=3000
 WorkingDirectory=/app/
 Type=simple
-User=todoapp
+User=hichat
 ExecStart=/usr/bin/node /app/server.js
 Restart=always
 
