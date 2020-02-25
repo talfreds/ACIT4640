@@ -1,0 +1,40 @@
+# -*- mode: ruby -*-CIT4640.tgz
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+  # The most common configuration options are documented and commented below.
+  # For a complete reference, please see the online documentation at
+  # https://docs.vagrantup.com.
+
+  # Every Vagrant development environment requires a box. You can search for
+  # boxes at https://vagrantcloud.com/search.
+
+	config.vm.box = "basebox_4640"
+  	config.ssh.username = "admin"
+  	config.ssh.private_key_path = "./files/acit_admin_id_rsa"
+  	config.vm.define "todoapp" do |todoapp|
+		todoapp.vm.hostname = "todoapp.bcit.local"
+		todoapp.vm.network "forwarded_port", guest: 80, host: 12080
+		todoapp.vm.synced_folder ".", "/vagrant", disabled: true
+		todoapp.vm.provision "file", source: "./files", destination: "/home/admin/files"
+	  	todoapp.vm.provision "file", source: "./setup", destination: "/home/admin/setup"
+	  	todoapp.vm.provision "shell" do |shell|
+			shell.path = "./setup/install_script.sh"
+		end
+		todoapp.vm.synced_folder ".", "/vagrant", disabled: true
+		todoapp.vm.provision "shell", inline: <<-SHELL
+			curl --user BCIT:w1nt3r2020 https://acit4640.y.vu/docs/module06/resources/mongodb_ACIT4640.tgz -o mongodb_ACIT4640.tgz
+			tar -zxf mongodb_ACIT4640.tgz
+			mongorestore -d acit4640 ACIT4640
+
+		SHELL
+		todoapp.vm.provider "virtualbox" do |vb|
+			vb.name = "TODO_4640"
+			vb.linked_clone = true
+		end
+	end
+end
