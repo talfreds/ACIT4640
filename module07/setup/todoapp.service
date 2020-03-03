@@ -1,0 +1,17 @@
+
+
+[Unit]
+Description=Todo app, ACIT4640
+After=network.target
+
+[Service]
+Environment=NODE_PORT=8080
+WorkingDirectory=/home/{{ todo_user }}/app/
+Type=simple
+User=todoapp
+ExecStart=/usr/bin/node /home/{{ todo_user }}/app/server.js
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,93 @@
+---
+- hosts: all
+  vars:
+          todo_user: todoapp
+          password: "whateverP@ss"
+          mongo_instance_name: acit4640
+  tasks:
+          - name: Install infrastructure excluding Mongo
+            become: yes
+            package:
+                    state: present
+                    name: 
+                        - nginx
+                        - git
+                        - nodejs
+                        - mongodb-server
+         
+          - name: create app service user
+            become: yes
+            user: 
+                name: "{{todo_user}}" 
+                password: "{{password}}"
+                expires: -1
+
+          - name: git clone 
+            become: yes
+            git:
+                    repo: https://github.com/timoguic/ACIT4640-todo-app.git
+                    dest: ~{{todo_user}}/app
+                    clone: yes
+                    force: yes
+
+          - name: copy db file to configure app
+            become: yes
+            template:
+                    src: ./setup/database.js
+                    dest: ~{{todo_user}}/app/config/database.js
+
+          - name: npm install for app
+            become: yes
+            npm:
+                    path: ~{{todo_user}}/app
+
+          - name: set permission for app
+            become: yes
+            file: path=~{{todo_user}}/ owner={{todo_user}} mode=0775 state=directory recurse=yes
+
+          - name: copy nginx.conf
+            become: yes
+            template:
+                   src: ./setup/nginx.conf
+                   dest: /etc/nginx/nginx.conf
+
+          - name: copy service file for app
+            become: yes
+            template:
+                    src: ./setup/todoapp.service
+                    dest: /etc/systemd/system/todoapp.service
+
+          - name: set SE Linux permissive
+            selinux:
+                    policy: targeted
+                    state: permissive
+
+          - name: start and enable mongod
+            become: yes
+            service:
+                    name: mongod
+                    state: restarted
+                    enabled: yes
+
+          - name: restart and enable nginx
+            become: yes
+            service:
+                    name: nginx
+                    state: reloaded
+                    enabled: yes
+
+
+          - name: start and enable todoapp service
+            become: yes
+            service:
+                    name: todoapp
+                    state: started
+                    enabled: yes
+
+
+          - name: firewall open port for http
+            become: yes
+            firewalld:
+                    service: http
+                    permanent: yes
+                    state: enabled
