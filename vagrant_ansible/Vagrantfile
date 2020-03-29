@@ -1,0 +1,32 @@
+# -*- mode: ruby -*-CIT4640.tgz
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+  # The most common configuration options are documented and commented below.
+  # For a complete reference, please see the online documentation at
+  # https://docs.vagrantup.com.
+
+  # Every Vagrant development environment requires a box. You can search for
+  # boxes at https://vagrantcloud.com/search.
+
+	config.vm.box = "basebox_4640"
+  	config.ssh.username = "admin"
+  	config.ssh.private_key_path = "./setup/acit_admin_id_rsa"
+  	config.vm.define "todoapp" do |todoapp|
+		todoapp.vm.hostname = "todoapp.bcit.local"
+		todoapp.vm.network "forwarded_port", guest: 80, host: 12080
+		todoapp.vm.synced_folder ".", "/vagrant", disabled: true
+		todoapp.vm.provider "virtualbox" do |vb|
+			vb.name = "TODO_4640"
+			vb.linked_clone = true
+		end
+	end
+	config.vm.provision :ansible do |ansible|
+		    ansible.playbook = "todoapp.yml"
+		        ansible.compatibility_mode = "2.0"
+	end
+end

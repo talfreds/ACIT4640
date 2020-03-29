@@ -1,0 +1,30 @@
+---
+ - block:
+         - copy:
+                 src: mongodb-org-4.2.repo
+                 dest: /etc/yum.repos.d/mongodb-org-4.2.repo
+           become: yes
+
+         - name: Install mongo
+           package:
+                   name: mongodb-org
+                   state: installed
+           become: yes
+           register: fresh_install
+
+         - name: enable and start service
+           systemd: 
+                name: mongod
+                state: restarted
+                enabled: yes
+           become: yes
+         
+         - name: add app database
+           shell: |
+                   curl --user BCIT:w1nt3r2020 https://acit4640.y.vu/docs/module06/resources/mongodb_ACIT4640.tgz -o mongodb_ACIT4640.tgz
+                   tar -zxf mongodb_ACIT4640.tgz
+                   mongorestore -d acit4640 ACIT4640
+           become: yes
+           ignore_errors: true
+           when: fresh_install.changed
+

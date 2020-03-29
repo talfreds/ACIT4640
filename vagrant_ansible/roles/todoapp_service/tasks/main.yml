@@ -1,0 +1,52 @@
+---
+- name: install git
+  become: yes
+  package:
+          state: installed
+          name:
+                  - git
+
+- name: create app user
+  become: yes
+  user:
+          name: "{{ todo_user }}"
+          password: "{{ password }}"
+          expires: -1
+
+- name: git clone
+  become: yes
+  git:
+          repo: https://github.com/timoguic/ACIT4640-todo-app.git
+          dest: "{{ todoapp_path }}"
+          force: yes
+  register: todoappinstalled
+
+- name: copy db file to configure app
+  become: yes
+  template:
+          src: database.js
+          dest: "{{ todoapp_path }}/config/database.js"
+
+- name: install app packages
+  become: yes
+  npm:
+          path: "{{ todoapp_path }}"
+
+- name: set app folder permissions
+  become: yes
+  file: path=~{{todo_user}}/ owner={{todo_user}} mode=0775 state=directory recurse=yes
+
+- name: copy service file for app service, if it does not already exist
+  become: yes
+  template:
+          src: todoapp.service
+          dest: /etc/systemd/system/todoapp.service
+          force: no
+
+- name: start and enable todoapp service
+  become: yes
+  service:
+          name: todoapp
+          state: restarted
+          enabled: yes
+          daemon_reload: yes

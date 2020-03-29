@@ -1,0 +1,11 @@
+- name: set SE Linux permissive, potentially redundant for basebox configuration
+  selinux:
+          policy: targeted
+          state: permissive
+
+- name: open firewall ports for http, potentially redundant as above
+  become: yes
+  firewalld:
+          service: http
+          permanent: yes
+          state: enabled

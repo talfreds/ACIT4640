@@ -1,0 +1,14 @@
+---
+- hosts: all
+  tasks:
+          - include_role:
+                  name: base_system
+          - include_role:
+                  name: todoapp
+            vars:
+                    todoapp_port: 8080
+                    todoapp_path: /home/todoapp/app
+                    todo_user: todoapp
+                    mongo_instance_name: acit4640
+                    password: whateverP@ss
+
